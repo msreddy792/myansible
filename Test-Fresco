@@ -1,0 +1,49 @@
+pipeline{
+    tools{
+        jdk 'myjava'
+        maven 'mymaven'
+    }
+    agent none 
+     stages{
+         stage('Project1')
+         {
+             agent any
+        steps{ 
+            git 'https://github.com/msreddy792/DevOpsClassCodes.git'
+        }
+         }
+        stage ('Compile'){
+            agent {label 'master'}
+        steps{
+            git 'https://github.com/msreddy792/DevOpsClassCodes.git'
+            sh 'mvn compile'
+        }
+        }
+        stage ('CodeReview'){
+          agent {label 'master'}
+        steps{
+             sh 'mvn cobertura:cobertura -Dcobertura.reports.format=xml'
+        }
+     } 
+     stage ('CodeTest'){
+            agent {label 'master'}
+        steps{
+            git 'https://github.com/msreddy792/DevOpsClassCodes.git'
+            sh 'mvn test'
+        }
+        post {
+            
+        success{
+            junit 'target/surefire-reports/*.xml'
+               }
+           }
+      }
+         stage ('package'){
+            agent {label 'master'}
+        steps{
+            git 'https://github.com/msreddy792/DevOpsClassCodes.git'
+            sh 'mvn package'
+        }
+        }
+     }
+}
